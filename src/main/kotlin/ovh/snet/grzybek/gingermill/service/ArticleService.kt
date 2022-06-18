@@ -28,15 +28,17 @@ class ArticleService(private val articleRepository: ArticleRepository) {
     val articleEntity =
       articleRepository.findByTitle(article.title) ?: ArticleEntity.fromArticle(article)
     articleEntity.visited = true
-    val linkedArticles = getLinkedArticles(article.links)
+    val linkedArticles = getLinkedArticles(article)
     articleEntity.articles = linkedArticles.toSet()
     articleRepository.save(articleEntity)
   }
 
-  private fun getLinkedArticles(articles: List<Article>): List<ArticleEntity> {
-    return articles.map {
-      articleRepository.findByTitle(it.title) ?: articleRepository.save(
-        ArticleEntity.fromArticle(it)
+  private fun getLinkedArticles(article: Article): List<ArticleEntity> {
+    return article.links
+      .filter { it.title != article.title }
+      .map {
+      articleRepository.findByTitle(it.title) ?:
+      articleRepository.save(ArticleEntity.fromArticle(it)
       )
     }
   }
