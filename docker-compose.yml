@@ -1,23 +1,17 @@
 version: "3.5"
 
 services:
-  neo4j:
-    image: docker.io/library/neo4j
-    restart: unless-stopped
+  neo:
+    # The image to use
+    image: neo4j:latest
+    # map the ports so we can check the db server is up
     ports:
-      - "${HTTP_PORT:-7474}:7474"
-      - "${NEO4J_PORT:-7687}:7687"
+      - 7474:7474
+      - 7687:7687
+    # mounting a named volume to the container to track db data
     volumes:
-      - neo4j-storage:/neo4j/data:/data
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-        reservations:
-          memory: 1G
+      - neo4j_data:/data/
 
+## volumes to be generated, these are saved somewhere for repeated use by docker
 volumes:
-  neo4j-storage:
-
-networks:
-  default:
+  neo4j_data:
