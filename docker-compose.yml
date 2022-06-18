@@ -1,0 +1,23 @@
+version: "3.5"
+
+services:
+  neo4j:
+    image: docker.io/library/neo4j
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-7474}:7474"
+      - "${NEO4J_PORT:-7687}:7687"
+    volumes:
+      - neo4j-storage:/neo4j/data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 1G
+
+volumes:
+  neo4j-storage:
+
+networks:
+  default:
