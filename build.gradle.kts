@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
   implementation("com.squareup.okhttp3:okhttp:4.10.0")
-  implementation("org.jsoup:jsoup:1.14.3")
+  implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
   implementation("org.neo4j:neo4j-ogm-bolt-driver:3.2.35")
   implementation("org.springframework.boot:spring-boot-starter-data-neo4j")
   implementation("org.springframework.boot:spring-boot-starter-data-rest")
