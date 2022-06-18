@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+  implementation("org.neo4j:neo4j-ogm-bolt-driver:3.2.35")
   implementation("org.springframework.boot:spring-boot-starter-data-neo4j")
   implementation("org.springframework.boot:spring-boot-starter-data-rest")
   implementation("org.springframework.boot:spring-boot-starter-web")
