@@ -16,6 +16,10 @@ class ArticleService(private val articleRepository: ArticleRepository) {
     return articleRepository.findFirstByVisitedEquals(false)?.toArticle()
   }
 
+  fun getLongestShortestPath() : Article {
+    return articleRepository.findLongestShortestPath().toArticle()
+  }
+
   fun saveArticle(article: Article) {
     val articleEntity =
       articleRepository.findByTitle(article.title) ?: ArticleEntity.fromArticle(article)
