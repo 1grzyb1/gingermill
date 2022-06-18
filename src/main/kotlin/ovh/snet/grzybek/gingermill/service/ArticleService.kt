@@ -12,6 +12,10 @@ class ArticleService(private val articleRepository: ArticleRepository) {
     return articleRepository.findAll().map { it?.toArticle() }
   }
 
+  fun getUnvisitedArticle() : Article? {
+    return articleRepository.findFirstByVisitedEquals(false)?.toArticle()
+  }
+
   fun saveArticle(article: Article) {
     val articleEntity =
       articleRepository.findByTitle(article.title) ?: ArticleEntity.fromArticle(article)
