@@ -16,6 +16,8 @@ repositories {
 }
 
 dependencies {
+  implementation("net.sourceforge.htmlunit:htmlunit:2.62.0")
+  implementation("org.jsoup:jsoup:1.14.3")
   implementation("org.neo4j:neo4j-ogm-bolt-driver:3.2.35")
   implementation("org.springframework.boot:spring-boot-starter-data-neo4j")
   implementation("org.springframework.boot:spring-boot-starter-data-rest")
