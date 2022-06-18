@@ -18,4 +18,8 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
       "  order by length(p) desc\n" +
       "  limit 1")
   fun findLongestShortestPath() : ArticleEntity
+
+  @Query("MATCH (n)\n" +
+      "DETACH DELETE n\n")
+  fun clear()
 }

@@ -1,9 +1,8 @@
 package ovh.snet.grzybek.gingermill.service
 
-import com.gargoylesoftware.htmlunit.BrowserVersion
-import com.gargoylesoftware.htmlunit.WebClient
-import com.gargoylesoftware.htmlunit.html.HtmlPage
-import org.jsoup.Jsoup
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.springframework.stereotype.Service
 import ovh.snet.grzybek.gingermill.model.Article
 import java.util.regex.Pattern
@@ -14,7 +13,8 @@ class ScrapWikiService(
   private val pattern: Pattern = Pattern.compile(
     "<a href=\"/wiki/(.*?)\"",
     Pattern.CASE_INSENSITIVE
-  )
+  ),
+  private val client: OkHttpClient = OkHttpClient()
 ) {
 
   fun scrapArticle(title: String): Article {
@@ -23,24 +23,23 @@ class ScrapWikiService(
       title
     )
 
-    val webClient = setUpWebClient()
-    val htmlPage: HtmlPage = webClient?.getPage(url) ?: throw RuntimeException("Page no found")
-    val parsedDocument = Jsoup.parse(htmlPage.asXml())
-    val content = parsedDocument.select("#content").toString()
+    val request: Request = Request.Builder()
+      .url(url)
+      .build()
+
+    val response: Response = client.newCall(request).execute()
+    val content = response.body?.string()
 
     var links = listOf<String>()
     val matcher = pattern.matcher(content)
     while (matcher.find()) {
-      links = links.plus(matcher.group(1))
+      val link = matcher.group(1)
+      if (link.contains(":")) {
+        continue
+      }
+      links = links.plus(link)
     }
 
     return Article(title, links.map { Article(it) })
-  }
-
-  private fun setUpWebClient(): WebClient? {
-    val webClient = WebClient(BrowserVersion.FIREFOX)
-    webClient.options.isThrowExceptionOnScriptError = false
-    webClient.options.isThrowExceptionOnFailingStatusCode = false
-    return webClient
   }
 }
