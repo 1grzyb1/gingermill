@@ -1,5 +1,7 @@
 package ovh.snet.grzybek.gingermill.service
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import mu.KLogger
 import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Async
@@ -20,6 +22,12 @@ class IndexWikipediaService(
 
     indexStartPage()
 
+    GlobalScope.launch {
+      index()
+    }
+  }
+
+  private fun index() {
     while (true) {
       val unvisited = articleService.getUnvisitedArticle() ?: return
       logger.info { "indexing article: ${unvisited.title}, this is $indexingCounter article" }

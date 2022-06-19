@@ -1,6 +1,7 @@
 package ovh.snet.grzybek.gingermill.service
 
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import ovh.snet.grzybek.gingermill.model.Article
 import ovh.snet.grzybek.gingermill.model.ArticleEntity
 import ovh.snet.grzybek.gingermill.repository.ArticleRepository
@@ -8,15 +9,20 @@ import ovh.snet.grzybek.gingermill.repository.ArticleRepository
 @Service
 class ArticleService(private val articleRepository: ArticleRepository) {
 
-  fun getArticles() : List<Article?> {
+  fun getArticles(): List<Article?> {
     return articleRepository.findAll().map { it?.toArticle() }
   }
 
-  fun getUnvisitedArticle() : Article? {
-    return articleRepository.findFirstByVisitedEquals(false)?.toArticle()
+  @Transactional
+  fun getUnvisitedArticle(): Article? {
+    val unvisited = articleRepository.findFirstByVisitedEquals(false)
+      ?: throw RuntimeException("Did not find unvisited Node")
+    unvisited.visited = true
+    articleRepository.save(unvisited)
+    return unvisited.toArticle()
   }
 
-  fun getLongestShortestPath() : Article {
+  fun getLongestShortestPath(): Article {
     return articleRepository.findLongestShortestPath().toArticle()
   }
 
@@ -24,6 +30,7 @@ class ArticleService(private val articleRepository: ArticleRepository) {
     articleRepository.clear()
   }
 
+  @Transactional
   fun saveArticle(article: Article) {
     val articleEntity =
       articleRepository.findByTitle(article.title) ?: ArticleEntity.fromArticle(article)
@@ -37,9 +44,7 @@ class ArticleService(private val articleRepository: ArticleRepository) {
     return article.links
       .filter { it.title != article.title }
       .map {
-      articleRepository.findByTitle(it.title) ?:
-      articleRepository.save(ArticleEntity.fromArticle(it)
-      )
-    }
+        articleRepository.findByTitle(it.title) ?: ArticleEntity.fromArticle(it)
+      }
   }
 }
