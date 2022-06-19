@@ -41,8 +41,11 @@ class ArticleService(private val articleRepository: ArticleRepository) {
   }
 
   private fun getLinkedArticles(article: Article): List<ArticleEntity> {
+    val existingArticles =
+      articleRepository.findByTitleIn(article.links.map { it.title }).map { it.title }
+
     return article.links
-      .filter { it.title != article.title }
+      .filter { it.title != article.title && existingArticles.contains(it.title) }
       .map {
         articleRepository.findByTitle(it.title) ?: ArticleEntity.fromArticle(it)
       }

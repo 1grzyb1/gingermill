@@ -8,6 +8,8 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
 
   fun findByTitle(title: String) : ArticleEntity?
 
+  fun findByTitleIn(titles: List<String>) : List<ArticleEntity>
+
   fun findFirstByVisitedEquals(visited: Boolean) : ArticleEntity?
 
   @Query("MATCH (a:Article),\n" +
