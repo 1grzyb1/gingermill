@@ -4,7 +4,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KLogger
 import mu.KotlinLogging
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,7 +15,6 @@ class IndexWikipediaService(
   private val logger: KLogger = KotlinLogging.logger {}
   private var indexingCounter = 0
 
-  @Async
   fun indexWikipedia() {
     articleService.clear()
 
