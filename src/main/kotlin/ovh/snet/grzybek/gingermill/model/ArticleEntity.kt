@@ -8,10 +8,10 @@ import org.springframework.data.neo4j.core.schema.Relationship
 @Node("Article")
 class ArticleEntity(
   @Id val title: String,
-  @Property("visited") var visited: Boolean = false
+  @Property("visited") var visited: Boolean = false,
 ) {
 
-  @Relationship(type = "LINKS_TO")
+  @Relationship(type = "LINKS_TO", direction = Relationship.Direction.OUTGOING)
   var articles: Set<ArticleEntity> = HashSet()
 
   fun toArticle(): Article {

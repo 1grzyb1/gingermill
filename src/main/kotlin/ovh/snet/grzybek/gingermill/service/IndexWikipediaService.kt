@@ -28,8 +28,8 @@ class IndexWikipediaService(
   private fun index() {
     while (true) {
       val unvisited = articleService.getUnvisitedArticle() ?: return
-      logger.info { "indexing article: ${unvisited.title}, this is $indexingCounter article" }
       val article = scrapWikiService.scrapArticle(unvisited.title)
+      logger.info { "indexing article: ${unvisited.title} with ${article.links.size}, this is $indexingCounter article" }
       articleService.saveArticle(article)
       indexingCounter++
     }

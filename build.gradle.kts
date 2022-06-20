@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+  implementation("org.neo4j:neo4j-jdbc:4.0.5")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
   implementation("com.squareup.okhttp3:okhttp:4.10.0")
   implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
