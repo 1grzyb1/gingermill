@@ -12,14 +12,16 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
   fun findFirstUnvisited(): ArticleEntity?
 
   @Query("MERGE (n:Article {title: $0}) return n")
-  fun mergeLinkedArticles(title: String) : ArticleEntity
+  fun mergeLinkedArticles(title: String): ArticleEntity
 
   @Query(
-    "MATCH\n" +
-        "  (a:Article),\n" +
-        "  (b:Article)\n" +
-        "WHERE a.title = $0 AND b.title in $1\n" +
-        "CREATE (a)-[r:LINKS_TO]->(b)\n"
+    """
+      MATCH
+      (a:Article),
+      (b:Article)
+      WHERE a.title = $0 AND b.title in $1 AND a.title <> b.title
+      CREATE (a)-[r:LINKS_TO]->(b)
+    """
   )
   fun createRelationBetween(
     @Param("parentName") parentName: String,
@@ -38,8 +40,7 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
   fun findLongestShortestPath(): ArticleEntity
 
   @Query(
-    "MATCH (n)\n" +
-        "DETACH DELETE n\n"
+    "MATCH (n) DETACH DELETE n"
   )
   fun clear()
 }

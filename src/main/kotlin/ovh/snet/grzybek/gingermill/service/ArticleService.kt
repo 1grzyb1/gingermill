@@ -21,8 +21,7 @@ class ArticleService(
 
   @Transactional
   fun getUnvisitedArticle(): Article? {
-    val unvisited = articleRepository.findFirstUnvisited()
-      ?: throw RuntimeException("Did not find unvisited Node")
+    val unvisited = articleRepository.findFirstUnvisited() ?: return null
     unvisited.visited = true
     articleRepository.save(unvisited)
     return unvisited.toArticle()
@@ -57,9 +56,7 @@ class ArticleService(
 
   private fun saveParentArticle(article: Article): ArticleEntity {
     val start = System.currentTimeMillis()
-    val articleEntity =
-      articleRepository.findByTitle(article.title) ?: ArticleEntity.fromArticle(article)
-    articleEntity.visited = true
+    val articleEntity = ArticleEntity.fromArticle(article, true)
     val saved = neo4jTemplate.save(articleEntity)
     val end = System.currentTimeMillis()
     logger.info("Saved parent in: ${end - start}")
@@ -67,7 +64,8 @@ class ArticleService(
     return saved
   }
 
-  private fun getLinkedArticles(article: Article): List<ArticleEntity> {
+  @Transactional
+  fun getLinkedArticles(article: Article): List<ArticleEntity> {
     val start = System.currentTimeMillis()
     val children = article.links.map { articleRepository.mergeLinkedArticles(it.title) }
     val end = System.currentTimeMillis()
