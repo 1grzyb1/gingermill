@@ -8,21 +8,22 @@ import ovh.snet.grzybek.gingermill.model.ArticleEntity
 interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
   fun findByTitle(title: String): ArticleEntity?
 
-  fun findByTitleIn(titles: List<String>): List<ArticleEntity>
+  @Query("MATCH (n:Article) where n.visited is null return n limit 1")
+  fun findFirstUnvisited(): ArticleEntity?
 
-  fun findFirstByVisitedEquals(visited: Boolean): ArticleEntity?
+  @Query("MERGE (n:Article {title: $0}) return n")
+  fun mergeLinkedArticles(title: String) : ArticleEntity
 
   @Query(
     "MATCH\n" +
         "  (a:Article),\n" +
         "  (b:Article)\n" +
-        "WHERE a.title = $0 AND b.title = $1\n" +
-        "CREATE (a)-[r:LINKS_TO]->(b)\n" +
-        "RETURN type(r)"
+        "WHERE a.title = $0 AND b.title in $1\n" +
+        "CREATE (a)-[r:LINKS_TO]->(b)\n"
   )
   fun createRelationBetween(
     @Param("parentName") parentName: String,
-    @Param("childName") childName: String
+    @Param("childName") childName: List<String>
   )
 
   @Query(

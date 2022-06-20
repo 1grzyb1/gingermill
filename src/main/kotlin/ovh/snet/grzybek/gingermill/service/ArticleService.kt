@@ -1,5 +1,6 @@
 package ovh.snet.grzybek.gingermill.service
 
+import mu.KLogger
 import org.springframework.data.neo4j.core.Neo4jTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -10,7 +11,8 @@ import ovh.snet.grzybek.gingermill.repository.ArticleRepository
 @Service
 class ArticleService(
   private val articleRepository: ArticleRepository,
-  private val neo4jTemplate: Neo4jTemplate
+  private val neo4jTemplate: Neo4jTemplate,
+  private val logger: KLogger
 ) {
 
   fun getArticles(): List<Article?> {
@@ -19,7 +21,7 @@ class ArticleService(
 
   @Transactional
   fun getUnvisitedArticle(): Article? {
-    val unvisited = articleRepository.findFirstByVisitedEquals(false)
+    val unvisited = articleRepository.findFirstUnvisited()
       ?: throw RuntimeException("Did not find unvisited Node")
     unvisited.visited = true
     articleRepository.save(unvisited)
@@ -36,40 +38,41 @@ class ArticleService(
 
   @Transactional
   fun saveArticle(article: Article) {
+
+    val linkedArticles = getLinkedArticles(article)
+    val saved = saveParentArticle(article)
+
+    createRelationships(saved, linkedArticles.toSet())
+  }
+
+  private fun createRelationships(saved: ArticleEntity, linkedArticles: Set<ArticleEntity>) {
+    val start = System.currentTimeMillis()
+
+    saved.articles = linkedArticles.toSet()
+    articleRepository.createRelationBetween(saved.title, saved.articles.map { it.title })
+
+    val end = System.currentTimeMillis()
+    logger.info("Saved relations in: ${end - start}")
+  }
+
+  private fun saveParentArticle(article: Article): ArticleEntity {
+    val start = System.currentTimeMillis()
     val articleEntity =
       articleRepository.findByTitle(article.title) ?: ArticleEntity.fromArticle(article)
     articleEntity.visited = true
-    val linkedArticles = getLinkedArticles(article)
-
-    var start = System.currentTimeMillis()
     val saved = neo4jTemplate.save(articleEntity)
-    var end = System.currentTimeMillis()
-    println("Saved parent in: ${end - start}")
+    val end = System.currentTimeMillis()
+    logger.info("Saved parent in: ${end - start}")
 
-    start = System.currentTimeMillis()
-    saved.articles = linkedArticles.toSet()
-    saved.articles.forEach { articleRepository.createRelationBetween(saved.title, it.title) }
-    end = System.currentTimeMillis()
-    println("Saved relations in: ${end - start}")
-
+    return saved
   }
 
   private fun getLinkedArticles(article: Article): List<ArticleEntity> {
-    val articlesWithoutParent = article.links.filter { it.title != article.title }
-    val existingArticles =
-      articleRepository.findByTitleIn(articlesWithoutParent.map { it.title })
-    val existingTitles = existingArticles.map { it.title }
-
-    val newArticles = articlesWithoutParent
-      .filter { !existingTitles.contains(it.title) }
-      .map { ArticleEntity.fromArticle(it) }
-      .distinctBy { it.title }
-
     val start = System.currentTimeMillis()
-    neo4jTemplate.saveAll(newArticles)
+    val children = article.links.map { articleRepository.mergeLinkedArticles(it.title) }
     val end = System.currentTimeMillis()
-    println("Saved children in: ${end - start}")
+    logger.info("Saved children in: ${end - start}")
 
-    return existingArticles.plus(newArticles)
+    return children
   }
 }

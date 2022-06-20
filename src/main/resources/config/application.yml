@@ -4,6 +4,7 @@ logging:
       springframework:
         data:
           neo4j: ERROR
+
 spring:
   data:
     neo4j:
