@@ -23,7 +23,7 @@ class ArticleService(
   fun getUnvisitedArticle(): Article? {
     val unvisited = articleRepository.findFirstUnvisited() ?: return null
     unvisited.visited = true
-    articleRepository.save(unvisited)
+    articleRepository.updateUnvisitedNode(unvisited.title)
     return unvisited.toArticle()
   }
 
@@ -35,7 +35,6 @@ class ArticleService(
     articleRepository.clear()
   }
 
-  @Transactional
   fun saveArticle(article: Article) {
 
     val linkedArticles = getLinkedArticles(article)
@@ -64,10 +63,11 @@ class ArticleService(
     return saved
   }
 
-  @Transactional
-  fun getLinkedArticles(article: Article): List<ArticleEntity> {
+  private fun getLinkedArticles(article: Article): List<ArticleEntity> {
     val start = System.currentTimeMillis()
-    val children = article.links.map { articleRepository.mergeLinkedArticles(it.title) }
+    val children = article.links.map {
+      articleRepository.mergeLinkedArticles(it.title)
+    }
     val end = System.currentTimeMillis()
     logger.info("Saved children in: ${end - start}")
 

@@ -1,11 +1,11 @@
 package ovh.snet.grzybek.gingermill.service
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.produce
 import mu.KLogger
 import org.springframework.stereotype.Service
 import ovh.snet.grzybek.gingermill.model.Article
-import java.util.*
 
 @Service
 class IndexWikipediaService(
@@ -15,36 +15,32 @@ class IndexWikipediaService(
 ) {
 
   private var indexingCounter = 0
-  private val toIndex: Queue<Article> = LinkedList<Article>()
 
   fun indexWikipedia() {
     articleService.clear()
 
     indexStartPage()
 
-    GlobalScope.launch {
-      addToQueue()
-    }
-
-    GlobalScope.launch {
-      index()
+    runBlocking {
+      val producer = produceArticle()
+      repeat(10) { indexArticle(it, producer) }
     }
   }
 
-  private fun addToQueue() {
+  fun CoroutineScope.produceArticle() = produce {
     while (true) {
       val unvisited = articleService.getUnvisitedArticle() ?: continue
-      toIndex.add(unvisited)
+      send(unvisited)
     }
   }
 
-  private fun index() {
-    while (true) {
-      if (toIndex.isEmpty()) continue
-      val unvisited = toIndex.remove() ?: continue
+  fun CoroutineScope.indexArticle(id: Int, channel: ReceiveChannel<Article>) = launch {
+    for (unvisited in channel) {
       val article = scrapWikiService.scrapArticle(unvisited.title)
-      logger.info { "indexing article: ${unvisited.title} with ${article.links.size}, this is $indexingCounter article" }
-      articleService.saveArticle(article)
+      logger.info { "indexing article: ${unvisited.title} with ${article.links.size}, this is $indexingCounter article with thread #$id" }
+      withContext(Dispatchers.IO) {
+        articleService.saveArticle(article)
+      }
       indexingCounter++
     }
   }

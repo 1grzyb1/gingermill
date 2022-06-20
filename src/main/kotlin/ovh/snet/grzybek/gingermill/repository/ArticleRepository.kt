@@ -11,8 +11,13 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
   @Query("MATCH (n:Article) where n.visited is null return n limit 1")
   fun findFirstUnvisited(): ArticleEntity?
 
-  @Query("MERGE (n:Article {title: $0}) return n")
+  @Query("MERGE (n:Article {title: $0}) return n limit 1")
   fun mergeLinkedArticles(title: String): ArticleEntity
+
+  @Query("MATCH (p:Article {title: $0})\n" +
+      "SET p.visited = true\n" +
+      "RETURN p limit 1")
+  fun updateUnvisitedNode(title: String): ArticleEntity
 
   @Query(
     """
