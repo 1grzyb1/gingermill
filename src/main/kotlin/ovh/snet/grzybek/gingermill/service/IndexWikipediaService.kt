@@ -7,6 +7,7 @@ import mu.KLogger
 import org.springframework.stereotype.Service
 import ovh.snet.grzybek.gingermill.model.Article
 import ovh.snet.grzybek.gingermill.repository.ArticleDataAccess
+import java.util.concurrent.atomic.AtomicInteger
 
 @Service
 class IndexWikipediaService(
@@ -16,7 +17,7 @@ class IndexWikipediaService(
   private val articleDataAccess: ArticleDataAccess
 ) {
 
-  private var indexingCounter = 0
+  private var indexingCounter = AtomicInteger(0)
 
   fun indexWikipedia() {
     articleService.clear()
@@ -44,7 +45,7 @@ class IndexWikipediaService(
         articleService.saveArticle(article)
         articleDataAccess.saveArticle(article.title)
       }
-      indexingCounter++
+      indexingCounter.incrementAndGet()
     }
   }
 

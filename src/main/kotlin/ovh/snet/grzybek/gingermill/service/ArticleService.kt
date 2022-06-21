@@ -6,18 +6,16 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ovh.snet.grzybek.gingermill.model.Article
 import ovh.snet.grzybek.gingermill.model.ArticleEntity
+import ovh.snet.grzybek.gingermill.repository.ArticleDataAccess
 import ovh.snet.grzybek.gingermill.repository.ArticleRepository
 
 @Service
 class ArticleService(
   private val articleRepository: ArticleRepository,
   private val neo4jTemplate: Neo4jTemplate,
-  private val logger: KLogger
+  private val logger: KLogger,
+  private val articleDataAccess: ArticleDataAccess
 ) {
-
-  fun getArticles(): List<Article?> {
-    return articleRepository.findAll().map { it?.toArticle() }
-  }
 
   @Transactional
   fun getUnvisitedArticle(): Article? {
@@ -27,12 +25,9 @@ class ArticleService(
     return unvisited.toArticle()
   }
 
-  fun getLongestShortestPath(): Article {
-    return articleRepository.findLongestShortestPath().toArticle()
-  }
-
   fun clear() {
     articleRepository.clear()
+    articleDataAccess.clearArticles()
   }
 
   fun saveArticle(article: Article) {

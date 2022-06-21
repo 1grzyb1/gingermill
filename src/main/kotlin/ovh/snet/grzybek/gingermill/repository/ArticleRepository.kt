@@ -6,7 +6,6 @@ import org.springframework.data.repository.query.Param
 import ovh.snet.grzybek.gingermill.model.ArticleEntity
 
 interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
-  fun findByTitle(title: String): ArticleEntity?
 
   @Query("MATCH (n:Article) where n.visited is null return n limit 1")
   fun findFirstUnvisited(): ArticleEntity?
@@ -34,15 +33,15 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
   )
 
   @Query(
-    "MATCH (a:Article),\n" +
-        "      (b:Article),\n" +
+    "MATCH (a:Article {title: $0}),\n" +
+        "      (b:Article {title: $1}),\n" +
         "      p = shortestPath((a)-[*]->(b))\n" +
         "  where (a <> b)\n" +
         "RETURN p\n" +
         "  order by length(p) desc\n" +
         "  limit 1"
   )
-  fun findLongestShortestPath(): ArticleEntity
+  fun findShortestPath(start: String, end: String): ArticleEntity
 
   @Query(
     "MATCH (n) DETACH DELETE n"

@@ -12,9 +12,18 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
       INSERT INTO article(title)
       VALUES (?)
       ON CONFLICT DO NOTHING 
-  """.trimIndent()
+  """
+
+  @Language("postgres")
+  private final val CLEAR_QUERY = """
+      DELETE FROM article WHERE true
+  """
 
   override fun saveArticle(title: String) {
     jdbcTemplate.update(SAVE_QUERY, title)
+  }
+
+  override fun clearArticles() {
+    jdbcTemplate.update(CLEAR_QUERY)
   }
 }
