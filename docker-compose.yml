@@ -1,17 +1,39 @@
 version: "3.5"
 
 services:
+  postgres:
+    image: docker.io/library/postgres:12
+    restart: unless-stopped
+    ports:
+      - "24889:5432"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-gingermill}"
+      POSTGRES_USER: "${POSTGRES_USER:-gingermill}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-gingermill}"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - postgres-storage:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 1G
   neo:
     # The image to use
     image: neo4j:latest
     # map the ports so we can check the db server is up
     ports:
-      - 7474:7474
-      - 7687:7687
+      - "7474:7474"
+      - "7687:7687"
     # mounting a named volume to the container to track db data
     volumes:
       - neo4j_data:/data/
 
 ## volumes to be generated, these are saved somewhere for repeated use by docker
 volumes:
+  postgres-storage:
   neo4j_data:
+
+networks:
+  default:

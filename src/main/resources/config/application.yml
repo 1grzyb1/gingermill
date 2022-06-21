@@ -6,6 +6,24 @@ logging:
           neo4j: ERROR
 
 spring:
+  sql:
+    init:
+      mode: never
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+  datasource:
+    # Postgres database
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:postgresql://localhost:24889/gingermill
+    username: gingermill
+    password: gingermill
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: public
+    contexts: default
+    database-change-log-table: ta_databasechangelog
+    database-change-log-lock-table: ta_databasechangeloglock
   data:
     neo4j:
       database: neo4j

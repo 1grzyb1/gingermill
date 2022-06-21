@@ -16,6 +16,9 @@ repositories {
 }
 
 dependencies {
+  implementation("org.liquibase:liquibase-core:4.6.2")
+  implementation("org.springframework.boot:spring-boot-starter-jdbc:2.7.0")
+  implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.neo4j:neo4j-jdbc:4.0.5")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
   implementation("com.squareup.okhttp3:okhttp:4.10.0")
@@ -28,6 +31,8 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+  runtimeOnly("org.postgresql:postgresql:42.3.6")
 }
 
 tasks.withType<KotlinCompile> {
