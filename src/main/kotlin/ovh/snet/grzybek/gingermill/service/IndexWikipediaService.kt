@@ -20,7 +20,6 @@ class IndexWikipediaService(
   private var indexingCounter = AtomicInteger(0)
 
   fun indexWikipedia() {
-    articleService.clear()
 
     indexStartPage()
 
