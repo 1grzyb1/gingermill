@@ -27,7 +27,7 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
     FROM article a
              JOIN article b ON a.title != b.title
     WHERE (a.title, b.title) NOT IN (SELECT start, "end" FROM article_connection)
-    LIMIT 1
+    LIMIT 1000
   """
 
   private final val SAVE_CONNECTION_QUERY = """
@@ -43,8 +43,8 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
     jdbcTemplate.update(CLEAR_QUERY)
   }
 
-  override fun findUntrackedPath(): UntrackedPath? {
-    return jdbcTemplate.queryForObject(
+  override fun findUntrackedPath(): MutableList<UntrackedPath> {
+    return jdbcTemplate.query(
       UNTRACKED_PATH_QUERY
     ) { rs, _ ->
       UntrackedPath(rs.getString(1), rs.getString(2))

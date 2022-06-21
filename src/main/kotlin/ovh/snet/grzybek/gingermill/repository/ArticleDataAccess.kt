@@ -9,7 +9,7 @@ interface ArticleDataAccess {
 
   fun clearArticles()
 
-  fun findUntrackedPath(): UntrackedPath?
+  fun findUntrackedPath(): MutableList<UntrackedPath>
 
   fun saveConnection(articleConnection: ArticleConnection)
 }
