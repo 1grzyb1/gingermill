@@ -1,13 +1,15 @@
 package ovh.snet.grzybek.gingermill.repository
 
-import org.intellij.lang.annotations.Language
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Service
+import ovh.snet.grzybek.gingermill.model.ArticleConnection
 import ovh.snet.grzybek.gingermill.model.UntrackedPath
 
 @Service
 internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : ArticleDataAccess {
+
+  private val objectMapper = ObjectMapper()
 
   private final val SAVE_QUERY = """
       INSERT INTO article(title)
@@ -28,6 +30,11 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
     LIMIT 1
   """
 
+  private final val SAVE_CONNECTION_QUERY = """
+      INSERT INTO article_connection (start, "end", path, length) 
+      VALUES (?, ?, ?::json, ?)
+  """
+
   override fun saveArticle(title: String) {
     jdbcTemplate.update(SAVE_QUERY, title)
   }
@@ -42,5 +49,15 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
     ) { rs, _ ->
       UntrackedPath(rs.getString(1), rs.getString(2))
     }
+  }
+
+  override fun saveConnection(articleConnection: ArticleConnection) {
+    jdbcTemplate.update(
+      SAVE_CONNECTION_QUERY,
+      articleConnection.start,
+      articleConnection.end,
+      objectMapper.writeValueAsString(articleConnection.path),
+      articleConnection.length
+    )
   }
 }

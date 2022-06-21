@@ -42,4 +42,8 @@
                              constraintName="article_title_end_fk"
                              referencedTableName="article" referencedColumnNames="title"/>
   </changeSet>
+
+  <changeSet id="1.0.2" author="grzybek">
+    <addAutoIncrement tableName="article_connection" columnName="id"/>
+  </changeSet>
 </databaseChangeLog>
