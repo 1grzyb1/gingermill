@@ -6,12 +6,14 @@ import kotlinx.coroutines.channels.produce
 import mu.KLogger
 import org.springframework.stereotype.Service
 import ovh.snet.grzybek.gingermill.model.Article
+import ovh.snet.grzybek.gingermill.repository.ArticleDataAccess
 
 @Service
 class IndexWikipediaService(
   private val articleService: ArticleService,
   private val scrapWikiService: ScrapWikiService,
-  private val logger: KLogger
+  private val logger: KLogger,
+  private val articleDataAccess: ArticleDataAccess
 ) {
 
   private var indexingCounter = 0
@@ -40,6 +42,7 @@ class IndexWikipediaService(
       logger.info { "indexing article: ${unvisited.title} with ${article.links.size}, this is $indexingCounter article with thread #$id" }
       withContext(Dispatchers.IO) {
         articleService.saveArticle(article)
+        articleDataAccess.saveArticle(article.title)
       }
       indexingCounter++
     }
