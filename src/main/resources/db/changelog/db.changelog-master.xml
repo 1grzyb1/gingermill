@@ -46,4 +46,10 @@
   <changeSet id="1.0.2" author="grzybek">
     <addAutoIncrement tableName="article_connection" columnName="id"/>
   </changeSet>
+
+  <changeSet id="1.0.3" author="grzybek">
+    <modifyDataType tableName="article" columnName="title" newDataType="text"/>
+    <modifyDataType tableName="article_connection" columnName="start" newDataType="text"/>
+    <modifyDataType tableName="article_connection" columnName="end" newDataType="text"/>
+  </changeSet>
 </databaseChangeLog>

@@ -27,7 +27,13 @@ class ScrapWikiService(
       .url(url)
       .build()
 
-    val response: Response = client.newCall(request).execute()
+    val response: Response
+    try {
+       response = client.newCall(request).execute()
+    } catch (e: Exception) {
+      return Article(title)
+    }
+
     val content = response.body?.string()
 
     var links = listOf<String>()

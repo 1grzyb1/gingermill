@@ -23,9 +23,9 @@ class IndexWikipediaService(
 
     indexStartPage()
 
-    runBlocking {
+    GlobalScope.launch {
       val producer = produceArticle()
-      repeat(10) { indexArticle(it, producer) }
+      repeat(100) { indexArticle(it, producer) }
     }
   }
 
@@ -38,7 +38,14 @@ class IndexWikipediaService(
 
   fun CoroutineScope.indexArticle(id: Int, channel: ReceiveChannel<Article>) = launch {
     for (unvisited in channel) {
-      val article = scrapWikiService.scrapArticle(unvisited.title)
+      var article = scrapWikiService.scrapArticle(unvisited.title)
+
+      if (article.links.isEmpty()) {
+        logger.warn { "Ups we make too many request to wiki trying to scrap again ${unvisited.title}" }
+        delay(30000L)
+        article = scrapWikiService.scrapArticle(unvisited.title)
+      }
+
       logger.info { "indexing article: ${unvisited.title} with ${article.links.size}, this is $indexingCounter article with thread #$id" }
       withContext(Dispatchers.IO) {
         articleService.saveArticle(article)

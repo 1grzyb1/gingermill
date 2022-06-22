@@ -21,6 +21,9 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
       DELETE FROM article WHERE TRUE
   """
 
+  private final val CLEAR_CONNECTIONS_QUERY = """
+      DELETE FROM article_connection WHERE TRUE
+  """
 
   private final val UNTRACKED_PATH_QUERY = """
     SELECT a.title AS start, b.title AS end
@@ -40,6 +43,7 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
   }
 
   override fun clearArticles() {
+    jdbcTemplate.update(CLEAR_CONNECTIONS_QUERY)
     jdbcTemplate.update(CLEAR_QUERY)
   }
 

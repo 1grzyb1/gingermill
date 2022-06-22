@@ -29,7 +29,7 @@ class CalculatePathService(
     while (true) {
       val paths = articleDataAccess.findUntrackedPath()
       paths.forEach {
-        delay(100L)
+        delay(10L)
         send(it)
       }
     }
