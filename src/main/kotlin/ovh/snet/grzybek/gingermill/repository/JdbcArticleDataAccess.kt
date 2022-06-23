@@ -26,12 +26,15 @@ internal class JdbcArticleDataAccess(private val jdbcTemplate: JdbcTemplate) : A
   """
 
   private final val UNTRACKED_PATH_QUERY = """
-    SELECT a.title AS start, b.title AS end
-    FROM article a
-             JOIN article b ON a.title != b.title
-    WHERE (a.title, b.title) NOT IN (SELECT start, "end" FROM article_connection)
-    LIMIT 1000
-  """
+      WITH start_articles
+      AS (SELECT * FROM article),
+      end_articles AS (SELECT * FROM article)
+  SELECT *
+  FROM start_articles a
+           JOIN end_articles b ON a.title != b.title
+  WHERE (a.title, b.title) NOT IN (SELECT start, "end" FROM article_connection)
+  LIMIT 1000
+    """
 
   private final val SAVE_CONNECTION_QUERY = """
       INSERT INTO article_connection (start, "end", path, length) 
