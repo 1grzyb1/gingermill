@@ -25,7 +25,7 @@ class IndexWikipediaService(
 
     GlobalScope.launch {
       val producer = produceArticle()
-      repeat(100) { indexArticle(it, producer) }
+      repeat(10) { indexArticle(it, producer) }
     }
   }
 

@@ -45,15 +45,14 @@ class ArticleService(
     articleRepository.createRelationBetween(saved.title, saved.articles.map { it.title })
 
     val end = System.currentTimeMillis()
-    logger.info("Saved relations in: ${end - start}")
+    logger.debug("Saved relations in: ${end - start}")
   }
 
   private fun saveParentArticle(article: Article): ArticleEntity {
     val start = System.currentTimeMillis()
-    val articleEntity = ArticleEntity.fromArticle(article, true)
-    val saved = neo4jTemplate.save(articleEntity)
+    val saved = articleRepository.mergeArticle(article.title)
     val end = System.currentTimeMillis()
-    logger.info("Saved parent in: ${end - start}")
+    logger.debug("Saved parent in: ${end - start}")
 
     return saved
   }
@@ -61,10 +60,10 @@ class ArticleService(
   private fun getLinkedArticles(article: Article): List<ArticleEntity> {
     val start = System.currentTimeMillis()
     val children = article.links.map {
-      articleRepository.mergeLinkedArticles(it.title)
+      articleRepository.mergeArticle(it.title)
     }
     val end = System.currentTimeMillis()
-    logger.info("Saved children in: ${end - start}")
+    logger.debug("Saved children in: ${end - start}")
 
     return children
   }
