@@ -52,4 +52,39 @@
     <modifyDataType tableName="article_connection" columnName="start" newDataType="text"/>
     <modifyDataType tableName="article_connection" columnName="end" newDataType="text"/>
   </changeSet>
+
+  <changeSet id="1.0.4" author="grzybek">
+    <addColumn tableName="article">
+      <column name="position" type="BIGINT" autoIncrement="true">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+    <createIndex tableName="article" indexName="article_position">
+      <column name="position"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="1.0.5" author="grzybek">
+    <createTable tableName="current_positions">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints nullable="false" primaryKey="true"/>
+      </column>
+
+      <column name="start" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="end" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="1.0.6" author="grzybek">
+    <insert tableName="current_positions">
+      <column name="id" value="0"/>
+      <column name="start" value="1"/>
+      <column name="end" value="1"/>
+    </insert>
+  </changeSet>
 </databaseChangeLog>

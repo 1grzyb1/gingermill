@@ -1,6 +1,7 @@
 package ovh.snet.grzybek.gingermill.repository
 
 import ovh.snet.grzybek.gingermill.model.ArticleConnection
+import ovh.snet.grzybek.gingermill.model.CurrentPosition
 import ovh.snet.grzybek.gingermill.model.UntrackedPath
 
 interface ArticleDataAccess {
@@ -9,7 +10,13 @@ interface ArticleDataAccess {
 
   fun clearArticles()
 
-  fun findUntrackedPath(): MutableList<UntrackedPath>
+  fun clearConnections()
+
+  fun getPath(start: Int, end: Int): UntrackedPath?
 
   fun saveConnection(articleConnection: ArticleConnection)
+
+  fun getCurrentPosition() : CurrentPosition
+
+  fun getLongestPath() : Int
 }
