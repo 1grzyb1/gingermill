@@ -42,7 +42,7 @@ LIMIT 1
   """
 
   private final val CURRENT_POSITION_QUERY = """
-      SELECT start, "end" FROM current_positions ORDER BY id LIMIT 1
+      SELECT start, "end" FROM current_positions ORDER BY id DESC LIMIT 1
   """
 
   private final val LONGEST_PATH_QUERY = """

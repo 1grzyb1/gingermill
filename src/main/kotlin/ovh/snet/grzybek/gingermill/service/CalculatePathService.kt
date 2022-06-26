@@ -28,7 +28,7 @@ class CalculatePathService(
 
     GlobalScope.launch {
       val producer = produceUntrackedPath()
-      repeat(2) { finShortestPath(it, producer) }
+      repeat(10) { finShortestPath(it, producer) }
     }
 
     GlobalScope.launch {
