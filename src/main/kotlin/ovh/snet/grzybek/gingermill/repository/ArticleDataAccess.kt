@@ -19,4 +19,6 @@ interface ArticleDataAccess {
   fun getCurrentPosition() : CurrentPosition
 
   fun getLongestPath() : Int
+
+  fun savePosition(start: Int, end: Int)
 }

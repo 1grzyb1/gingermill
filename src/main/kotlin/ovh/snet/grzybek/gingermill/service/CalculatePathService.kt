@@ -26,9 +26,13 @@ class CalculatePathService(
   fun calculatePaths() {
     setInitialValues()
 
-    runBlocking {
+    GlobalScope.launch {
       val producer = produceUntrackedPath()
       repeat(2) { finShortestPath(it, producer) }
+    }
+
+    GlobalScope.launch {
+      savePosition()
     }
   }
 
@@ -42,7 +46,7 @@ class CalculatePathService(
         articleDataAccess.getPath(startPosition.get(), endPosition.getAndIncrement())
 
       if (path == null) {
-        startPosition.incrementAndGet();
+        startPosition.incrementAndGet()
         endPosition.set(0)
         continue
       }
@@ -53,12 +57,12 @@ class CalculatePathService(
 
   fun CoroutineScope.finShortestPath(id: Int, channel: ReceiveChannel<UntrackedPath>) = launch {
     for (path in channel) {
-      logger.info { "Finding shortest path between ${path.start} and ${path.end} using thread $id" }
+      logger.info { "Finding shortest path between ${path.start} and ${path.end}" }
       withContext(Dispatchers.IO) {
         val shortestEntity =
           articleRepository.findShortestPath(path.start, path.end) ?: ArticleEntity("-1")
         val shortest = shortestEntity.toArticle()
-        logger.info { "Found shortest path between ${path.start} and ${path.end} using thread $id" }
+        logger.debug { "Found shortest path between ${path.start} and ${path.end}" }
 
         if (shortest.getDepth() > longestPath.get()) {
           articleDataAccess.clearConnections()
@@ -85,4 +89,10 @@ class CalculatePathService(
     longestPath.set(articleDataAccess.getLongestPath())
   }
 
+  private suspend fun savePosition() {
+    while (true) {
+      articleDataAccess.savePosition(startPosition.get(), endPosition.get())
+      delay(30000)
+    }
+  }
 }

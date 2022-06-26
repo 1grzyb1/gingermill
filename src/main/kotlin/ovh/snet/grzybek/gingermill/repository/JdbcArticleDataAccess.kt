@@ -49,6 +49,11 @@ LIMIT 1
       SELECT length FROM article_connection ORDER BY length desc LIMIT 1
   """
 
+  private final val INSERT_POSITION_QUERY = """
+      INSERT INTO current_positions(start, "end")
+      VALUES (?, ?)
+  """
+
   override fun saveArticle(title: String) {
     jdbcTemplate.update(SAVE_QUERY, title)
   }
@@ -96,5 +101,9 @@ LIMIT 1
     } catch (e: Exception) {
       0
     }
+  }
+
+  override fun savePosition(start: Int, end: Int) {
+    jdbcTemplate.update(INSERT_POSITION_QUERY, start, end)
   }
 }
