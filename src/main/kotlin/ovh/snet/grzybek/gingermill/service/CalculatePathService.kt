@@ -43,13 +43,7 @@ class CalculatePathService(
       }
 
       val path =
-        articleDataAccess.getPath(startPosition.get(), endPosition.getAndIncrement())
-
-      if (path == null) {
-        startPosition.incrementAndGet()
-        endPosition.set(0)
-        continue
-      }
+        articleDataAccess.getPath(startPosition.get(), endPosition.getAndIncrement()) ?: break
 
       send(path)
     }
@@ -65,6 +59,7 @@ class CalculatePathService(
         logger.debug { "Found shortest path between ${path.start} and ${path.end}" }
 
         if (shortest.getDepth() > longestPath.get()) {
+          longestPath.set(shortest.getDepth())
           articleDataAccess.clearConnections()
         }
 
