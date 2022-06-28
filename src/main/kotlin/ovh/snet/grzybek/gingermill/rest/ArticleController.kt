@@ -1,6 +1,7 @@
 package ovh.snet.grzybek.gingermill.rest
 
 import org.springframework.web.bind.annotation.*
+import ovh.snet.grzybek.gingermill.model.FindPathRequest
 import ovh.snet.grzybek.gingermill.service.ArticleService
 import ovh.snet.grzybek.gingermill.service.CalculatePathService
 import ovh.snet.grzybek.gingermill.service.IndexWikipediaService
@@ -21,12 +22,12 @@ class ArticleController
   }
 
   @GetMapping
-  fun getArticles() {
-    calculatePathService.calculatePaths()
+  fun calculatePaths(@RequestBody request: FindPathRequest) {
+    calculatePathService.calculatePaths(request.startTitle, request.endTitle, request.moveStart)
   }
 
   @PutMapping
-  fun addArticle() {
-    indexWikiService.indexWikipedia();
+  fun indexArticles() {
+    indexWikiService.indexWikipedia()
   }
 }

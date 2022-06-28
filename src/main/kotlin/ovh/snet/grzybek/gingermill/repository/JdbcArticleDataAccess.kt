@@ -46,12 +46,16 @@ LIMIT 1
   """
 
   private final val LONGEST_PATH_QUERY = """
-      SELECT length FROM article_connection ORDER BY length desc LIMIT 1
+      SELECT length FROM article_connection ORDER BY length DESC LIMIT 1
   """
 
   private final val INSERT_POSITION_QUERY = """
       INSERT INTO current_positions(start, "end")
       VALUES (?, ?)
+  """
+
+  private final val GET_POSITION_QUERY = """
+      SELECT position FROM article WHERE title = ?
   """
 
   override fun saveArticle(title: String) {
@@ -105,5 +109,10 @@ LIMIT 1
 
   override fun savePosition(start: Int, end: Int) {
     jdbcTemplate.update(INSERT_POSITION_QUERY, start, end)
+  }
+
+  override fun getPositionByTitle(title: String): Int {
+    return jdbcTemplate.queryForObject(GET_POSITION_QUERY, { rs, _ -> rs.getInt(1) }, title)
+      ?: throw RuntimeException("Couldn't find title")
   }
 }

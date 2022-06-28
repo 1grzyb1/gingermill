@@ -19,15 +19,16 @@ class CalculatePathService(
   private val logger: KLogger
 ) {
 
-  private val startPosition = AtomicInteger(-1)
-  private val endPosition = AtomicInteger(-1)
-  private val longestPath = AtomicInteger(-1)
+  private val startPosition = AtomicInteger(1)
+  private val endPosition = AtomicInteger(1)
+  private val longestPath = AtomicInteger(0)
 
-  fun calculatePaths() {
-    setInitialValues()
+  fun calculatePaths(startTitle: String?, endTitle: String?, moveStart: Boolean) {
+
+    setInitialValues(startTitle, endTitle)
 
     GlobalScope.launch {
-      val producer = produceUntrackedPath()
+      val producer = produceUntrackedPath(moveStart)
       repeat(10) { finShortestPath(it, producer) }
     }
 
@@ -36,14 +37,21 @@ class CalculatePathService(
     }
   }
 
-  fun CoroutineScope.produceUntrackedPath() = produce {
+  fun CoroutineScope.produceUntrackedPath(moveStart: Boolean) = produce {
     while (true) {
-      if (endPosition.get() == startPosition.get()) {
+      if (moveStart) {
+        startPosition.incrementAndGet()
+      }
+      else {
         endPosition.incrementAndGet()
       }
 
+      if (endPosition.get() == startPosition.get()) {
+        continue
+      }
+
       val path =
-        articleDataAccess.getPath(startPosition.get(), endPosition.getAndIncrement()) ?: break
+        articleDataAccess.getPath(startPosition.get(), endPosition.get()) ?: break
 
       send(path)
     }
@@ -77,10 +85,16 @@ class CalculatePathService(
     }
   }
 
-  private fun setInitialValues() {
-    val currentPosition = articleDataAccess.getCurrentPosition()
-    startPosition.set(currentPosition.start)
-    endPosition.set(currentPosition.end)
+  private fun setInitialValues(startTitle: String?, endTitle: String?) {
+
+    if (startTitle != null) {
+      startPosition.set(articleDataAccess.getPositionByTitle(startTitle))
+    }
+
+    if (endTitle != null) {
+      endPosition.set(articleDataAccess.getPositionByTitle(endTitle))
+    }
+
     longestPath.set(articleDataAccess.getLongestPath())
   }
 
