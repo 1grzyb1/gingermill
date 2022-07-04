@@ -13,9 +13,11 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
   @Query("MERGE (n:Article {title: $0}) return n limit 1")
   fun mergeArticle(title: String): ArticleEntity
 
-  @Query("MATCH (p:Article {title: $0})\n" +
-      "SET p.visited = true\n" +
-      "RETURN p limit 1")
+  @Query(
+    "MATCH (p:Article {title: $0})\n" +
+        "SET p.visited = true\n" +
+        "RETURN p limit 1"
+  )
   fun updateUnvisitedNode(title: String): ArticleEntity
 
   @Query(
@@ -44,7 +46,33 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
   fun findShortestPath(start: String, end: String): ArticleEntity?
 
   @Query(
+    """
+      MATCH (source:Article{title: $0})
+      CALL gds.bfs.stream('articles_graph', {
+        sourceNode: source
+      })
+      YIELD path
+      RETURN last(nodes(path))
+    """
+  )
+  fun findFarthest(title: String): ArticleEntity?
+
+  @Query(
     "MATCH (n) DETACH DELETE n"
   )
   fun clear()
+
+  @Query(
+    """
+      CALL gds.graph.project('articles_graph', 'Article', 'LINKS_TO') YIELD graphName
+    """
+  )
+  fun createGraph()
+
+  @Query(
+    """
+      CALL gds.graph.drop('articles_graph') YIELD graphName
+    """
+  )
+  fun removeGraph()
 }

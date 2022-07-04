@@ -23,7 +23,7 @@ class ArticleController
 
   @GetMapping
   fun calculatePaths(@RequestBody request: FindPathRequest) {
-    calculatePathService.calculatePaths(request.startTitle, request.endTitle, request.moveStart)
+    calculatePathService.calculatePaths(request.startTitle)
   }
 
   @PutMapping

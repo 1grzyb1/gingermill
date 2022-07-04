@@ -20,7 +20,9 @@ interface ArticleDataAccess {
 
   fun getLongestPath() : Int
 
-  fun savePosition(start: Int, end: Int)
+  fun savePosition(start: Int)
 
   fun getPositionByTitle(title: String): Int
+
+  fun getTitleByPosition(title: Int): String?
 }

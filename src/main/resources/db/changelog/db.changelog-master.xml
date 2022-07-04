@@ -97,4 +97,22 @@
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </addColumn>
   </changeSet>
+
+  <changeSet id="1.0.8" author="grzybek">
+    <dropColumn tableName="article_connection" columnName="end"/>
+  </changeSet>
+
+  <changeSet id="1.0.9" author="grzybek">
+    <addColumn tableName="article_connection">
+      <column name="end" type="text"/>
+    </addColumn>
+
+    <addForeignKeyConstraint baseTableName="article_connection" baseColumnNames="end"
+                             constraintName="article_title_end_fk"
+                             referencedTableName="article" referencedColumnNames="title"/>
+  </changeSet>
+
+  <changeSet id="1.0.10" author="grzybek">
+    <dropColumn tableName="current_positions" columnName="end"/>
+  </changeSet>
 </databaseChangeLog>

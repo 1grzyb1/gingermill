@@ -20,6 +20,7 @@ services:
         reservations:
           memory: 1G
   neo:
+    network_mode: host
     # The image to use
     image: neo4j:latest
     # map the ports so we can check the db server is up
@@ -29,6 +30,8 @@ services:
     # mounting a named volume to the container to track db data
     volumes:
       - neo4j_data:/data/
+    environment:
+      NEO4JLABS_PLUGINS: '["graph-data-science"]'
 
 ## volumes to be generated, these are saved somewhere for repeated use by docker
 volumes:

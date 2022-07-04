@@ -50,12 +50,16 @@ LIMIT 1
   """
 
   private final val INSERT_POSITION_QUERY = """
-      INSERT INTO current_positions(start, "end")
-      VALUES (?, ?)
+      INSERT INTO current_positions(start)
+      VALUES (?)
   """
 
   private final val GET_POSITION_QUERY = """
       SELECT position FROM article WHERE title = ?
+  """
+
+  private final val GET_TITLE_QUERY = """
+      SELECT title FROM article WHERE position = ?
   """
 
   override fun saveArticle(title: String) {
@@ -107,12 +111,21 @@ LIMIT 1
     }
   }
 
-  override fun savePosition(start: Int, end: Int) {
-    jdbcTemplate.update(INSERT_POSITION_QUERY, start, end)
+  override fun savePosition(start: Int) {
+    jdbcTemplate.update(INSERT_POSITION_QUERY, start)
   }
 
   override fun getPositionByTitle(title: String): Int {
     return jdbcTemplate.queryForObject(GET_POSITION_QUERY, { rs, _ -> rs.getInt(1) }, title)
       ?: throw RuntimeException("Couldn't find title")
+  }
+
+  override fun getTitleByPosition(title: Int): String? {
+    return try {
+      jdbcTemplate.queryForObject(GET_TITLE_QUERY, { rs, _ -> rs.getString(1) }, title)
+        ?: throw RuntimeException("Couldn't find title")
+    } catch (e: Exception) {
+      null
+    }
   }
 }

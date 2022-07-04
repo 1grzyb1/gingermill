@@ -7,7 +7,6 @@ import mu.KLogger
 import org.springframework.stereotype.Service
 import ovh.snet.grzybek.gingermill.model.ArticleConnection
 import ovh.snet.grzybek.gingermill.model.ArticleEntity
-import ovh.snet.grzybek.gingermill.model.UntrackedPath
 import ovh.snet.grzybek.gingermill.repository.ArticleDataAccess
 import ovh.snet.grzybek.gingermill.repository.ArticleRepository
 import java.util.concurrent.atomic.AtomicInteger
@@ -20,16 +19,15 @@ class CalculatePathService(
 ) {
 
   private val startPosition = AtomicInteger(1)
-  private val endPosition = AtomicInteger(1)
   private val longestPath = AtomicInteger(0)
 
-  fun calculatePaths(startTitle: String?, endTitle: String?, moveStart: Boolean) {
+  fun calculatePaths(startTitle: String?) {
 
-    setInitialValues(startTitle, endTitle)
+    setInitialValues(startTitle)
 
     GlobalScope.launch {
-      val producer = produceUntrackedPath(moveStart)
-      repeat(10) { finShortestPath(it, producer) }
+      val producer = produceUntrackedPath()
+      repeat(20) { finShortestPath(it, producer) }
     }
 
     GlobalScope.launch {
@@ -37,47 +35,41 @@ class CalculatePathService(
     }
   }
 
-  fun CoroutineScope.produceUntrackedPath(moveStart: Boolean) = produce {
+  fun CoroutineScope.produceUntrackedPath() = produce {
     while (true) {
-      if (moveStart) {
-        startPosition.incrementAndGet()
-      }
-      else {
-        endPosition.incrementAndGet()
-      }
-
-      if (endPosition.get() == startPosition.get()) {
-        continue
-      }
+      startPosition.incrementAndGet()
 
       val path =
-        articleDataAccess.getPath(startPosition.get(), endPosition.get()) ?: break
+        articleDataAccess.getTitleByPosition(startPosition.get()) ?: break
 
       send(path)
     }
   }
 
-  fun CoroutineScope.finShortestPath(id: Int, channel: ReceiveChannel<UntrackedPath>) = launch {
-    for (path in channel) {
-      logger.info { "Finding shortest path between ${path.start} and ${path.end}" }
+  fun CoroutineScope.finShortestPath(id: Int, channel: ReceiveChannel<String>) = launch {
+    for (startArticle in channel) {
+      logger.info { "Finding farthest article for ${startArticle}" }
       withContext(Dispatchers.IO) {
-        val shortestEntity =
-          articleRepository.findShortestPath(path.start, path.end) ?: ArticleEntity("-1")
-        val shortest = shortestEntity.toArticle()
-        logger.debug { "Found shortest path between ${path.start} and ${path.end}" }
+        val farthestEntity =
+          articleRepository.findFarthest(startArticle) ?: ArticleEntity("-1")
+        logger.debug { "Found farthest path between ${startArticle}" }
 
-        if (shortest.getDepth() > longestPath.get()) {
-          longestPath.set(shortest.getDepth())
+        val pathEntity =
+          articleRepository.findShortestPath(startArticle, farthestEntity.title)
+        val path = pathEntity?.toArticle() ?: return@withContext
+
+        if (path.getDepth() > longestPath.get()) {
+          longestPath.set(path.getDepth())
           articleDataAccess.clearConnections()
         }
 
-        if (shortest.getDepth() >= longestPath.get()) {
+        if (path.getDepth() >= longestPath.get()) {
           articleDataAccess.saveConnection(
             ArticleConnection(
-              path.start,
-              path.end,
-              shortest,
-              if (shortest.title != "-1") shortest.getDepth() else -1
+              startArticle,
+              farthestEntity.title,
+              path,
+              if (farthestEntity.title != "-1") path.getDepth() else -1
             )
           )
         }
@@ -85,14 +77,18 @@ class CalculatePathService(
     }
   }
 
-  private fun setInitialValues(startTitle: String?, endTitle: String?) {
+  private fun setInitialValues(startTitle: String?) {
+
+    try {
+      articleRepository.removeGraph()
+    } catch (e: Exception) {
+      logger.warn { "Graph isn't present" }
+    } finally {
+      articleRepository.createGraph()
+    }
 
     if (startTitle != null) {
       startPosition.set(articleDataAccess.getPositionByTitle(startTitle))
-    }
-
-    if (endTitle != null) {
-      endPosition.set(articleDataAccess.getPositionByTitle(endTitle))
     }
 
     longestPath.set(articleDataAccess.getLongestPath())
@@ -100,7 +96,7 @@ class CalculatePathService(
 
   private suspend fun savePosition() {
     while (true) {
-      articleDataAccess.savePosition(startPosition.get(), endPosition.get())
+      articleDataAccess.savePosition(startPosition.get())
       delay(30000)
     }
   }
