@@ -53,6 +53,7 @@ interface ArticleRepository : Neo4jRepository<ArticleEntity?, String?> {
       })
       YIELD path
       RETURN last(nodes(path))
+      LIMIT 1
     """
   )
   fun findFarthest(title: String): ArticleEntity?
